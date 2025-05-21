@@ -1,0 +1,46 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: logs-virtual-service
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - hw-gateway
+  http:
+  - match:
+    - uri:
+        exact: "/log"
+    route:
+    - destination:
+        host: hw-service
+        port:
+          number: 5000
+    timeout: 1s
+    retries:
+      attempts: 2
+      perTryTimeout: 1s
+    fault:
+      delay:
+        fixedDelay: 2s
+        percentage:
+          value: 100
+  - match:
+    - uri:
+        exact: "/"
+    - uri:
+        exact: "/logs"
+    - uri:
+        exact: "/status"
+    route:
+    - destination:
+        host: hw-service
+        port:
+          number: 5000
+  - match:
+    - uri:
+        prefix: /
+    directResponse:
+      status: 404
+      body:
+        string: "Not Found"
