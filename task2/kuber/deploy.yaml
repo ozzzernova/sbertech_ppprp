@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hw-app
+  labels:
+    app: hw-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: hw-app
+  template:
+    metadata:
+      labels:
+        app: hw-app
+    spec:
+      containers:
+      - name: hw-app
+        image: hw-app:latest
+        ports:
+        - containerPort: 5000
+        env:
+        - name: PORT
+          value: "5000"
+        volumeMounts:
+        - name: logs-volume
+          mountPath: /app/logs
+      volumes:
+      - name: logs-volume
+        hostPath:
+          path: /app/logs
+          type: DirectoryOrCreate
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: hw-service
+spec:
+  selector:
+    app: hw-app
+  sessionAffinity: None
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+  type: ClusterIP
